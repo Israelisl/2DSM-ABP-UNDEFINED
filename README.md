@@ -101,23 +101,11 @@ cd 2DSM-ABP-UNDEFINED
 </ul>
 
 <h3>Usuários padrão (criados automaticamente pelo seed)</h3>
-<table>
-    <tr>
-        <th>Perfil</th>
-        <th>Email</th>
-        <th>Senha</th>
-    </tr>
-    <tr>
-        <td>ADMIN</td>
-        <td>admin@fatec.sp.gov.br</td>
-        <td>Admin@123</td>
-    </tr>
-    <tr>
-        <td>SECRETARIA</td>
-        <td>secretaria@fatec.sp.gov.br</td>
-        <td>Secretaria@123</td>
-    </tr>
-</table>
+<p>
+    Os usuários de teste padrão para o ambiente de desenvolvimento são gerados automaticamente através do seed do banco de dados. 
+    As credenciais padrão de acesso local (e-mail e senha) para os perfis de <strong>ADMIN</strong> e <strong>SECRETARIA</strong> 
+    estão configuradas diretamente nas variáveis de ambiente do arquivo <code>backend/.env.example</code>.
+</p>
 
 <h3>Para resetar o banco de dados</h3>
 <pre><code>docker-compose down -v
