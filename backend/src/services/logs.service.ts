@@ -8,5 +8,8 @@ export const logsService = {
         flag?: "ATENDEU" | "NAO_ATENDEU";
     }) {
         return logsRepository.create(data);
+    },
+    async listLogs() {
+        return logsRepository.findAll();
     }
 };

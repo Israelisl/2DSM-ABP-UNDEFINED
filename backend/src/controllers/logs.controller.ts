@@ -10,3 +10,13 @@ export async function createLog(req: Request, res: Response) {
         res.status(500).json({error:"Erro ao criar log"})
     }
 }
+
+export async function listLogs(req: Request, res: Response) {
+  try {
+    const logs = await logsService.listLogs();
+    return res.json(logs);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "Erro ao listar logs" });
+  }
+}

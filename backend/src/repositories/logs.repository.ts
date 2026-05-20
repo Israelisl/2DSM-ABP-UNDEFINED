@@ -36,4 +36,13 @@ export const logsRepository = {
 
     return result.rows[0];
   },
+  async findAll() {
+    const result = await pool.query(`
+    SELECT id, session_id, navigation_flow, inquiry_ids, flag, created_at
+    FROM interaction_logs
+    ORDER BY created_at DESC
+  `);
+
+    return result.rows;
+  }
 };

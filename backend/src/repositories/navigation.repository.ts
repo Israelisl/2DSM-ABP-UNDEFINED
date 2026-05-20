@@ -21,12 +21,12 @@ export const navigationRepository = {
       `,
       [slug]
     );
-    if (parentResult.rows.length === 0){
+    if (parentResult.rows.length === 0) {
       return null
     }
 
     const parent = parentResult.rows[0]
-    
+
     const childrenResult = await pool.query(
       `
       SELECT id, title, slug, answer_summary, evidence_excerpt, evidence_source
@@ -37,7 +37,7 @@ export const navigationRepository = {
       `,
       [parent.id]
     );
-    return{
+    return {
       parent,
       children: childrenResult.rows
     }
