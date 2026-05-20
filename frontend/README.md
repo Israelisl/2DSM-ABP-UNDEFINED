@@ -1,73 +1,72 @@
-# React + TypeScript + Vite
+# Frontend — FATEC Jacareí - 2DSM ABP Undefined
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface web do sistema de autoatendimento da Secretaria Acadêmica da FATEC Jacareí, desenvolvida em React com TypeScript.
 
-Currently, two official plugins are available:
+## 🛠️ Tecnologias
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- React 18
+- TypeScript
+- Vite
+- CSS
 
-## React Compiler
+## 📁 Estrutura de Pastas
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+frontend/
+├── public/
+│   └── assets/
+│       ├── pdf/        # Documentos oficiais (regulamentos, calendário, PPCs)
+│       └── png/        # Imagens de horários de aula
+├── src/
+│   ├── components/     # Componentes reutilizáveis (ChatContainer, Message, OptionButton)
+│   ├── services/       # Comunicação com o backend (API)
+│   ├── pages/          # Páginas da aplicação (Chat, Login, Admin)
+│   └── main.tsx        # Ponto de entrada da aplicação
+├── index.html
+└── vite.config.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🚀 Como rodar localmente
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+> Recomendado: rodar via Docker Compose a partir da raiz do projeto.
+> Veja as instruções completas no [README principal](../../README.md).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Para rodar apenas o frontend de forma isolada:
+
+```bash
+# Instalar dependências
+npm install
+
+# Iniciar servidor de desenvolvimento
+npm run dev
 ```
+
+Acesse em: `http://localhost:5173`
+
+## 🔗 Integração com o Backend
+
+O frontend consome as seguintes rotas do backend:
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/navigation/menus` | Busca os menus iniciais do chatbot |
+| GET | `/navigation/submenus/:slug` | Busca os submenus de um nó |
+| POST | `/auth/login` | Autenticação de usuários |
+| GET | `/auth/me` | Retorna dados do usuário logado |
+| POST | `/inquiries` | Envia uma dúvida para a secretaria |
+
+## 🌐 Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do `frontend/` com:
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+## 👥 Perfis de Acesso
+
+| Perfil | Acesso |
+|--------|--------|
+| Público (aluno) | Chatbot de navegação e envio de dúvidas |
+| SECRETARIA | Painel de gerenciamento de dúvidas |
+| ADMIN | Painel administrativo completo |
