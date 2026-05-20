@@ -373,6 +373,7 @@ h1 {
   resize: vertical;
   outline: none;
   font-size: 1rem;
+  color: #222222;
 }
 
 .sd-feedback-comment textarea:focus {
@@ -466,4 +467,16 @@ h1 {
   .sd-feedback-buttons {
     flex-direction: column;
   }
+}
+/* REMOVE FUNDO CINZA/AZUL DO AUTOFILL */
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  -webkit-text-fill-color: #222222 !important;
+  caret-color: #222222 !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
