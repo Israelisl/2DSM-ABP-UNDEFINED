@@ -34,7 +34,7 @@ export const inquiryService = {
 
   updateStatus(id: number, status: InquiryStatus) {
     return apiRequest<Inquiry>(`/inquiries/${id}/status`, {
-      method: "PATCH",
+      method: "PUT",
       auth: true,
       body: JSON.stringify({ status }),
     });

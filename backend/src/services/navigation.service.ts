@@ -22,7 +22,7 @@ export const navigationService = {
     return navigationRepository.update(id, data);
   },
 
-  async deactivate(id: number) {
-    return navigationRepository.deactivate(id);
+  async remove(id: number) {
+    return navigationRepository.remove(id);
   },
 };

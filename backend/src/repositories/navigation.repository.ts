@@ -175,11 +175,10 @@ export const navigationRepository = {
     return result.rows[0] ?? null;
   },
 
-  async deactivate(id: number) {
+  async remove(id: number) {
     const result = await pool.query(
       `
-      UPDATE navigation_nodes
-      SET is_active = false
+      DELETE FROM navigation_nodes
       WHERE id = $1
       RETURNING id
       `,

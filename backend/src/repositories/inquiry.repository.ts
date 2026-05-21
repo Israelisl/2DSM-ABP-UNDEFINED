@@ -48,8 +48,8 @@ export const inquiryRepository = {
   async updateStatus(id: number, status: InquiryStatus, answeredBy: string | null) {
     const result = await pool.query(
       `UPDATE inquiries
-       SET status = $1,
-           answered_by = CASE WHEN $1 = 'RESPONDIDA' THEN $2 ELSE NULL END
+       SET status = $1::inquiry_status,
+           answered_by = CASE WHEN $1::inquiry_status = 'RESPONDIDA' THEN $2::uuid ELSE NULL END
        WHERE id = $3
        RETURNING
          id,

@@ -10,6 +10,13 @@ function normalizeNullableText(value: unknown) {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function normalizeExternalLink(value: unknown) {
+  const text = normalizeNullableText(value);
+  if (!text) return null;
+
+  return /^https?:\/\//i.test(text) ? text : "__INVALID_LINK__";
+}
+
 function normalizeNavigationPayload(body: Record<string, unknown>): NavigationNodeWriteData | null {
   const title = normalizeNullableText(body.title);
   const slug = normalizeNullableText(body.slug);
@@ -32,6 +39,11 @@ function normalizeNavigationPayload(body: Record<string, unknown>): NavigationNo
     return null;
   }
 
+  const evidenceSource = normalizeExternalLink(body.evidence_source);
+  if (evidenceSource === "__INVALID_LINK__") {
+    return null;
+  }
+
   return {
     parent_id,
     title,
@@ -39,7 +51,7 @@ function normalizeNavigationPayload(body: Record<string, unknown>): NavigationNo
     prompt: normalizeNullableText(body.prompt),
     answer_summary: normalizeNullableText(body.answer_summary),
     evidence_excerpt: normalizeNullableText(body.evidence_excerpt),
-    evidence_source: normalizeNullableText(body.evidence_source),
+    evidence_source: evidenceSource,
     display_order: displayOrderValue,
     is_active: typeof body.is_active === "boolean" ? body.is_active : true,
   };
@@ -81,7 +93,7 @@ export async function createNavigationNode(req: Request, res: Response) {
   const data = normalizeNavigationPayload(req.body);
 
   if (!data) {
-    res.status(400).json({ error: "Titulo, slug, parent_id e ordem devem ser validos." });
+    res.status(400).json({ error: "Titulo, slug, parent_id, ordem e link externo devem ser validos." });
     return;
   }
 
@@ -99,7 +111,7 @@ export async function updateNavigationNode(req: Request, res: Response) {
   const data = normalizeNavigationPayload(req.body);
 
   if (!Number.isInteger(id) || id <= 0 || !data) {
-    res.status(400).json({ error: "Dados invalidos para atualizar a pergunta." });
+    res.status(400).json({ error: "Dados invalidos para atualizar a pergunta. Use link externo iniciado por http ou https." });
     return;
   }
 
@@ -127,7 +139,7 @@ export async function deleteNavigationNode(req: Request, res: Response) {
   }
 
   try {
-    const deleted = await navigationService.deactivate(id);
+    const deleted = await navigationService.remove(id);
 
     if (!deleted) {
       res.status(404).json({ error: "Pergunta nao encontrada." });
@@ -137,6 +149,6 @@ export async function deleteNavigationNode(req: Request, res: Response) {
     res.status(204).send();
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Erro ao desativar pergunta." });
+    res.status(500).json({ error: "Erro ao excluir pergunta." });
   }
 }

@@ -8,7 +8,13 @@ type MessageBubbleProps = {
 };
 
 export function MessageBubble({ children, sender, html, evidence_source }: MessageBubbleProps) {
-  const getFileName = (path: string) => path.split("/").pop() || "Arquivo";
+  const getLinkLabel = (path: string) => {
+    try {
+      return new URL(path).hostname;
+    } catch {
+      return "Link externo";
+    }
+  };
 
   return (
     <div className={`sd-message-row ${sender === "user" ? "user-row" : ""}`}>
@@ -27,7 +33,7 @@ export function MessageBubble({ children, sender, html, evidence_source }: Messa
               rel="noopener noreferrer"
               className="sd-evidence-link"
             >
-              <span className="sd-evidence-text">{getFileName(evidence_source)}</span>
+              <span className="sd-evidence-text">{getLinkLabel(evidence_source)}</span>
             </a>
           </div>
         )}

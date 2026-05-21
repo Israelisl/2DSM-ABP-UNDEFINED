@@ -49,7 +49,7 @@ export const navigationAdminService = {
     });
   },
 
-  deactivate(id: number) {
+  remove(id: number) {
     return apiRequest<void>(`/navigation/${id}`, {
       method: "DELETE",
       auth: true,
