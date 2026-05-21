@@ -1,10 +1,56 @@
 import type { Request, Response } from "express";
+import type { AuthenticatedRequest } from "../middlewares/auth.middleware";
 import { inquiryService } from "../services/inquiry.service";
+import type { InquiryStatus } from "../repositories/inquiry.repository";
 
 // Validação simples de email para evitar entradas claramente inválidas.
 function isValidEmail(email: string) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+}
+
+export async function getInquiries(_req: Request, res: Response) {
+  try {
+    // Busca a lista completa para a tela administrativa acompanhar as duvidas.
+    const inquiries = await inquiryService.findAll();
+    res.json(inquiries);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao buscar as duvidas." });
+  }
+}
+
+export async function updateInquiryStatus(req: AuthenticatedRequest, res: Response) {
+  // O id vem pela URL e precisa ser um numero inteiro valido.
+  const id = Number(req.params.id);
+  const { status } = req.body;
+
+  if (!Number.isInteger(id) || id <= 0) {
+    res.status(400).json({ message: "Id da duvida invalido." });
+    return;
+  }
+
+  if (status !== "ABERTA" && status !== "RESPONDIDA") {
+    res.status(400).json({ message: "Status invalido. Use ABERTA ou RESPONDIDA." });
+    return;
+  }
+
+  try {
+    // Quando a duvida e marcada como respondida, é guardado qual usuario fez isso.
+    // Se voltar para aberta, o responsavel e removido para refletir o novo estado.
+    const answeredBy = status === "RESPONDIDA" ? req.user?.id ?? null : null;
+    const inquiry = await inquiryService.updateStatus(id, status as InquiryStatus, answeredBy);
+
+    if (!inquiry) {
+      res.status(404).json({ message: "Duvida nao encontrada." });
+      return;
+    }
+
+    res.json(inquiry);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Erro ao atualizar o status da duvida." });
+  }
 }
 
 export async function createInquiry(req: Request, res: Response) {
