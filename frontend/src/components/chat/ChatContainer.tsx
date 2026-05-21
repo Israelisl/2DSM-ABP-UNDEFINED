@@ -1,178 +1,295 @@
-import { useEffect, useRef, useState } from 'react';
-import { MessageBubble } from './MessageBubble';
-import { OptionButton } from './OptionButton';
+// frontend/src/components/chat/ChatContainer.tsx
+import { useEffect, useState } from "react";
+import { useChat } from "../../hooks/useChat";
+import { MessageBubble } from "./MessageBubble";
+import { OptionButton } from "./OptionButton";
 
-type NavigationNode = {
+type LocalMessage = {
   id: number;
-  title: string;
-  slug: string;
-  answer_summary?: string | null;
-  evidence_excerpt?: string | null;
-  evidence_source?: string | null;
-};
-
-type DisplayOption = NavigationNode | { title: 'Voltar'; slug: '__back' };
-
-type Message = {
-  id: number;
-  sender: 'bot' | 'user';
+  sender: "bot" | "user";
   text: string;
-  html?: boolean;
-  evidence_source?: string | null;
 };
 
-type NavigationLevel = {
-  slug: string | null;
-  title: string;
-  options: DisplayOption[];
+type FormData = {
+  nome: string;
+  email: string;
+  duvida: string;
 };
 
-const API_PREFIX = import.meta.env.VITE_API_URL ?? '';
-const BACK_OPTION: DisplayOption = { title: 'Voltar', slug: '__back' };
-
-function getApiUrl(path: string) {
-  return `${API_PREFIX}${path}`;
-}
+type FeedbackType = "positivo" | "negativo" | null;
 
 export function ChatContainer() {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, sender: 'bot', text: 'Para qual curso você deseja atendimento?' }
-  ]);
+  const { messages, currentOptions, bottomRef, handleChoice } = useChat();
 
-  const [currentOptions, setCurrentOptions] = useState<DisplayOption[]>([]);
-  const [history, setHistory] = useState<NavigationLevel[]>([]);
-  const [currentLevel, setCurrentLevel] = useState<NavigationLevel | null>(null);
-  const bottomRef = useRef<HTMLDivElement | null>(null);
+  const [localMessages, setLocalMessages] = useState<LocalMessage[]>([]);
+  const [showQuestionForm, setShowQuestionForm] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [showFeedbackComment, setShowFeedbackComment] = useState(false);
+  const [hasInteraction, setHasInteraction] = useState(false);
 
-  useEffect(() => {
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }, [messages, currentOptions]);
+  const [feedbackType, setFeedbackType] = useState<FeedbackType>(null);
+  const [feedbackComment, setFeedbackComment] = useState("");
 
-  async function fetchRoot() {
-    try {
-      const response = await fetch(getApiUrl('/navigation/root'));
-      
-      if (!response.ok) throw new Error('Falha ao carregar o menu inicial.');
-
-      const rootOptions = (await response.json()) as NavigationNode[];
-      setCurrentLevel({ slug: null, title: 'root', options: rootOptions });
-      setCurrentOptions(rootOptions);
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [
-        ...prev,
-        {
-          id: Date.now(),
-          sender: 'bot',
-          text: 'Não foi possível carregar as opções de atendimento no momento. Tente novamente mais tarde.'
-        }
-      ]);
-    }
-  }
+  const [formData, setFormData] = useState<FormData>({
+    nome: "",
+    email: "",
+    duvida: "",
+  });
 
   useEffect(() => {
-    void (async () => {
-      await fetchRoot();
-    })();
-  }, []);
+    const isFinalAnswer =
+      hasInteraction &&
+      currentOptions.length === 1 &&
+      currentOptions[0]?.slug === "__back";
 
-  const fetchChildren = async (slug: string) => {
-    const response = await fetch(getApiUrl(`/navigation/${slug}/children`));
-    if (!response.ok) {
-      throw new Error('Nó não encontrado');
-    }
+    setShowFeedback(
+      isFinalAnswer && !showQuestionForm && !showFeedbackComment
+    );
+  }, [currentOptions, hasInteraction, showQuestionForm, showFeedbackComment]);
 
-    return (await response.json()) as {
-      parent: NavigationNode;
-      children: NavigationNode[];
-    };
+  const openQuestionForm = () => {
+    setLocalMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        sender: "user",
+        text: "📩 Enviar pergunta",
+      },
+      {
+        id: Date.now() + 1,
+        sender: "bot",
+        text: "Preencha o formulário abaixo para enviar sua dúvida à secretaria.",
+      },
+    ]);
+
+    setShowQuestionForm(true);
+    setShowFeedback(false);
+    setShowFeedbackComment(false);
+    setFeedbackType(null);
   };
 
-  const buildOptions = (children: NavigationNode[], canGoBack: boolean) => {
-    if (children.length === 0) {
-      return [BACK_OPTION];
-    }
+  const handleSubmitQuestion = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
 
-    return canGoBack ? [...children, BACK_OPTION] : children;
+    setLocalMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        sender: "user",
+        text: `Nome: ${formData.nome}\nE-mail: ${formData.email}\nDúvida: ${formData.duvida}`,
+      },
+      {
+        id: Date.now() + 1,
+        sender: "bot",
+        text: "Sua pergunta foi enviada com sucesso. A secretaria responderá em breve.",
+      },
+    ]);
+
+    setFormData({
+      nome: "",
+      email: "",
+      duvida: "",
+    });
+
+    setShowQuestionForm(false);
+    setShowFeedback(false);
+    setShowFeedbackComment(false);
+    setFeedbackType(null);
   };
 
-  const getBotText = (node: NavigationNode, children: NavigationNode[]) => {
-    if (node.answer_summary) {
-      return node.answer_summary;
-    }
+  const handleFeedback = (type: "positivo" | "negativo") => {
+    setFeedbackType(type);
 
-    if (children.length > 0) {
-      return `Entendido! O que você deseja saber sobre ${node.title}?`;
-    }
+    setLocalMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        sender: "user",
+        text: type === "positivo" ? "👍 Sim, ajudou" : "👎 Não ajudou",
+      },
+    ]);
 
-    return `Ainda não temos uma resposta detalhada para "${node.title}".`;
+    setShowFeedback(false);
+    setShowFeedbackComment(true);
   };
 
-  const handleChoice = async (option: DisplayOption) => {
-    setMessages(prev => [...prev, { id: Date.now(), sender: 'user', text: option.title }]);
+  const submitFeedbackComment = () => {
+    setLocalMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        sender: "user",
+        text: feedbackComment.trim()
+          ? `Comentário: ${feedbackComment}`
+          : "Comentário: não informado",
+      },
+      {
+        id: Date.now() + 1,
+        sender: "bot",
+        text:
+          feedbackType === "positivo"
+            ? "Obrigado pelo feedback positivo!"
+            : "Obrigado pelo feedback. Vamos utilizar isso para melhorar o atendimento.",
+      },
+    ]);
 
-    if (option.slug === '__back') {
-      const previous = history[history.length - 1];
-      if (!previous) {
-        return;
-      }
+    setFeedbackComment("");
+    setShowFeedback(false);
+    setShowFeedbackComment(false);
+    setFeedbackType(null);
+  };
 
-      setHistory(prev => prev.slice(0, -1));
-      setCurrentLevel(previous);
-      setCurrentOptions(previous.options);
-      return;
-    }
+  const handleOptionClick = (opt: { slug: string; title: string }) => {
+    setHasInteraction(true);
 
-    try {
-      const data = await fetchChildren(option.slug);
-      const nextOptions = buildOptions(data.children, true);
+    handleChoice(opt);
 
-      setMessages(prev => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: getBotText(data.parent, data.children),
-          html: Boolean(data.parent.answer_summary),
-          evidence_source: data.parent.evidence_source
-        }
-      ]);
-
-      if (currentLevel) {
-        setHistory(prev => [...prev, currentLevel]);
-      }
-
-      setCurrentLevel({ slug: option.slug, title: option.title, options: nextOptions });
-      setCurrentOptions(nextOptions);
-    } catch (error) {
-      console.error(error);
-      setMessages(prev => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          sender: 'bot',
-          text: 'Não foi possível carregar a resposta desejada no momento. Por favor, tente outra opção.'
-        }
-      ]);
-    }
+    setShowQuestionForm(false);
+    setShowFeedback(false);
+    setShowFeedbackComment(false);
+    setFeedbackType(null);
   };
 
   return (
-    <div className="sd-chat-body">
-      {messages.map(msg => (
-        <MessageBubble key={msg.id} sender={msg.sender} html={msg.html} evidence_source={msg.evidence_source}>
-          {msg.text}
-        </MessageBubble>
-      ))}
+    <div className="sd-chat-body-wrapper">
+      <header className="sd-chat-header">
+        <div className="sd-chat-header-text">
+          <h1>Secretaria Digital - Fatec Jacareí</h1>
+          <p>Atendimento público para alunos e interessados</p>
+        </div>
+      </header>
 
-      <div className="sd-chip-row">
-        {currentOptions.map(opt => (
-          <OptionButton key={opt.slug} label={opt.title} onClick={() => handleChoice(opt)} />
+      <div className="sd-chat-body">
+        {messages.map((msg) => (
+          <MessageBubble
+            key={msg.id}
+            sender={msg.sender}
+            html={msg.html}
+            evidence_source={msg.evidence_source}
+          >
+            {msg.text}
+          </MessageBubble>
         ))}
+
+        {localMessages.map((msg) => (
+          <MessageBubble key={msg.id} sender={msg.sender}>
+            {msg.text}
+          </MessageBubble>
+        ))}
+
+        {showFeedback && (
+          <div className="sd-feedback-box">
+            <p>Essa resposta ajudou você?</p>
+
+            <div className="sd-feedback-buttons">
+              <button
+                className="sd-feedback-positive"
+                onClick={() => handleFeedback("positivo")}
+              >
+                👍 Sim
+              </button>
+
+              <button
+                className="sd-feedback-negative"
+                onClick={() => handleFeedback("negativo")}
+              >
+                👎 Não
+              </button>
+
+              <button
+                className="sd-feedback-question"
+                onClick={openQuestionForm}
+              >
+                📩 Enviar pergunta
+              </button>
+            </div>
+          </div>
+        )}
+
+        {showFeedbackComment && (
+          <div className="sd-feedback-comment">
+            <p className="sd-feedback-comment-title">
+              {feedbackType === "positivo"
+                ? "Deseja deixar algum comentário positivo?"
+                : "O que podemos melhorar?"}
+            </p>
+
+            <textarea
+              placeholder={
+                feedbackType === "positivo"
+                  ? "Digite seu comentário..."
+                  : "Descreva o que podemos melhorar..."
+              }
+              value={feedbackComment}
+              onChange={(e) => setFeedbackComment(e.target.value)}
+            />
+
+            <button onClick={submitFeedbackComment}>Enviar Feedback</button>
+          </div>
+        )}
+
+        {showQuestionForm && (
+          <form className="sd-question-form" onSubmit={handleSubmitQuestion}>
+            <input
+              type="text"
+              placeholder="Nome"
+              value={formData.nome}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  nome: e.target.value,
+                })
+              }
+              required
+            />
+
+            <input
+              type="email"
+              placeholder="E-mail"
+              value={formData.email}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  email: e.target.value,
+                })
+              }
+              required
+            />
+
+            <textarea
+              placeholder="Digite sua dúvida"
+              value={formData.duvida}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  duvida: e.target.value,
+                })
+              }
+              required
+            />
+
+            <button type="submit">Enviar</button>
+          </form>
+        )}
+
+        <div className="sd-chip-row">
+          {currentOptions.map((opt) => (
+            <OptionButton
+              key={opt.slug}
+              label={opt.title}
+              onClick={() => handleOptionClick(opt)}
+            />
+          ))}
+
+          <OptionButton
+            key="enviar-pergunta-secretaria"
+            label="Enviar Pergunta para Secretaria"
+            onClick={openQuestionForm}
+          />
+        </div>
+
+        <div ref={bottomRef} />
       </div>
-      <div ref={bottomRef} />
     </div>
   );
 }
