@@ -1,4 +1,4 @@
-import {inquiryRepository, type InquiryCreateData, type InquiryStatus,} from "../repositories/inquiry.repository";
+import { inquiryRepository, type InquiryCreateData, type InquiryStatus, } from "../repositories/inquiry.repository";
 
 export const inquiryService = {
   // Camada de serviço para encapsular a lógica de negócios e impedir que
