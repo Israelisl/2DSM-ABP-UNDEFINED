@@ -1,74 +1,69 @@
-// frontend/src/App.tsx
-import { useState } from 'react';
-import { ChatContainer } from './components/chat/ChatContainer';
-import { Login } from './components/admin/Login';
-import './App.css';
-import './Footer.css'
-import logoFatec from './assets/fatec_jacarei-removebg-preview.png';
+import { useState } from "react";
+import { Login } from "./components/admin/Login";
+import { ChatContainer } from "./components/chat/ChatContainer";
+import { ScreenSelectorPage } from "./components/panels/ScreenSelectorPage";
+import { authService, type AuthUser } from "./services/authService";
+import "./App.css";
+import "./Footer.css";
+import logoFatec from "./assets/fatec_jacarei-removebg-preview.png";
+
+type AppScreen = "chat" | "login" | "admin";
 
 export default function App() {
-  // Esse estado controla qual tela está ativa: 'chat' ou 'login' ou 'admin_dashboard'
-  const [currentScreen, setCurrentScreen] = useState<'chat' | 'login' | 'admin'>('chat');
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(() =>
+    authService.getStoredToken() ? "admin" : "chat",
+  );
+  const [user, setUser] = useState<AuthUser | null>(() => authService.getStoredUser());
+
+  const handleLogout = () => {
+    authService.logout();
+    setUser(null);
+    setCurrentScreen("chat");
+  };
 
   return (
     <div className="sd-app-container">
-      {/* Header Padrão do Sistema */}
       <header className="sd-header">
-         <img src={logoFatec} className='logoFatec' height={50} alt="" />
+        <img src={logoFatec} className="logoFatec" height={50} alt="Fatec Jacarei" />
         <div className="sd-header-title">
-          
-          <h1>Secretaria Digital - Fatec Jacareí</h1>
+          <h1>Secretaria Digital - Fatec Jacarei</h1>
         </div>
-        
-        {/* Botões de navegação no topo da tela */}
+
         <nav className="sd-nav">
-          {currentScreen !== 'chat' && (
-            <button className="sd-nav-btn" onClick={() => setCurrentScreen('chat')}>
-              Voltar para o Chat
+          {currentScreen !== "chat" && (
+            <button className="sd-nav-btn" onClick={() => setCurrentScreen("chat")}>
+              Voltar para o chat
             </button>
           )}
-          {currentScreen === 'chat' && (
-            <button className="sd-nav-btn sd-btn-admin" onClick={() => setCurrentScreen('login')}>
-              Área Admin
+          {currentScreen === "chat" && (
+            <button className="sd-nav-btn sd-btn-admin" onClick={() => setCurrentScreen("login")}>
+              Area admin
+            </button>
+          )}
+          {currentScreen === "admin" && (
+            <button className="sd-nav-btn" onClick={handleLogout}>
+              Sair
             </button>
           )}
         </nav>
       </header>
 
-      
-
-      {/* Conteúdo Dinâmico com base na tela selecionada */}
       <main className="sd-main-content">
-        {currentScreen === 'chat' && <ChatContainer />}
-        
-        {currentScreen === 'login' && (
-          <Login 
-            onLoginSuccess={() => {
-              alert('Login feito com sucesso! Token armazenado.');
-              setCurrentScreen('admin'); // Leva para a tela restrita após logar
-            }} 
+        {currentScreen === "chat" && <ChatContainer />}
+        {currentScreen === "login" && (
+          <Login
+            onLoginSuccess={(authenticatedUser) => {
+              setUser(authenticatedUser);
+              setCurrentScreen("admin");
+            }}
           />
         )}
-
-        {currentScreen === 'admin' && (
-          <div className="sd-admin-dashboard">
-            <h2>Bem-vindo, Secretaria Acadêmica!</h2>
-            <p>Esta é a área protegida pelo requisito RF09.</p>
-            <button 
-              className="sd-btn-primary" 
-              onClick={() => {
-                localStorage.removeItem('token'); // Faz o logout limpando o token
-                setCurrentScreen('chat');
-              }}
-            >
-              Sair (Logout)
-            </button>
-          </div>
-        )}
+        {currentScreen === "admin" && <ScreenSelectorPage user={user} />}
       </main>
+
       <footer>
         <div className="footer">
-          <span>Fatec Jacareí</span>
+          <span>Fatec Jacarei</span>
         </div>
       </footer>
     </div>

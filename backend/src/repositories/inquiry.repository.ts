@@ -26,9 +26,19 @@ export const inquiryRepository = {
   // Retorna as duvidas mais recentes primeiro para facilitar o acompanhamento.
   async findAll() {
     const result = await pool.query(
-      `SELECT id, requester_name, requester_email, question, status, answered_by, created_at, updated_at
+      `SELECT
+         inquiries.id,
+         inquiries.requester_name,
+         inquiries.requester_email,
+         inquiries.question,
+         inquiries.status,
+         inquiries.answered_by,
+         users.name AS answered_by_name,
+         inquiries.created_at,
+         inquiries.updated_at
        FROM inquiries
-       ORDER BY created_at DESC`
+       LEFT JOIN users ON users.id = inquiries.answered_by
+       ORDER BY inquiries.created_at DESC`
     );
 
     return result.rows;
@@ -41,7 +51,16 @@ export const inquiryRepository = {
        SET status = $1,
            answered_by = CASE WHEN $1 = 'RESPONDIDA' THEN $2 ELSE NULL END
        WHERE id = $3
-       RETURNING id, requester_name, requester_email, question, status, answered_by, created_at, updated_at`,
+       RETURNING
+         id,
+         requester_name,
+         requester_email,
+         question,
+         status,
+         answered_by,
+         (SELECT name FROM users WHERE users.id = inquiries.answered_by) AS answered_by_name,
+         created_at,
+         updated_at`,
       [status, answeredBy, id]
     );
 

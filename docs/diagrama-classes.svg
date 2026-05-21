@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1320" height="840" viewBox="0 0 1320 840" role="img" aria-labelledby="title desc">
+  <title id="title">Diagrama de classes - Secretaria Digital</title>
+  <desc id="desc">Diagrama de classes com usuarios, perguntas de navegacao, duvidas e logs de interacao.</desc>
+  <defs>
+    <style>
+      .canvas { fill: #f7f7f7; }
+      .class-box { fill: #ffffff; stroke: #9f1d1d; stroke-width: 2; rx: 8; }
+      .class-title { fill: #b00000; }
+      .title-text { fill: #ffffff; font: 700 20px Segoe UI, Arial, sans-serif; }
+      .section-line { stroke: #d2d2d2; stroke-width: 1; }
+      .text { fill: #1b1b1b; font: 15px Consolas, monospace; }
+      .small { fill: #3c3c3c; font: 13px Segoe UI, Arial, sans-serif; }
+      .relation { stroke: #333333; stroke-width: 2; fill: none; marker-end: url(#arrow); }
+      .relation-dashed { stroke: #333333; stroke-width: 2; fill: none; stroke-dasharray: 8 7; marker-end: url(#arrow); }
+      .label { fill: #333333; font: 700 14px Segoe UI, Arial, sans-serif; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333333"/>
+    </marker>
+  </defs>
+
+  <rect class="canvas" x="0" y="0" width="1320" height="840"/>
+  <text x="660" y="48" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="800" fill="#1b1b1b">
+    Secretaria Digital - Diagrama de Classes
+  </text>
+  <text x="660" y="78" text-anchor="middle" class="small">
+    FAQ por navegacao, envio de duvidas, feedback e area administrativa
+  </text>
+
+  <g transform="translate(70 130)">
+    <rect class="class-box" width="310" height="250"/>
+    <rect class="class-title" width="310" height="48" rx="8"/>
+    <text class="title-text" x="155" y="31" text-anchor="middle">User</text>
+    <line class="section-line" x1="0" x2="310" y1="48" y2="48"/>
+    <text class="text" x="18" y="78">+ id: UUID</text>
+    <text class="text" x="18" y="104">+ name: string</text>
+    <text class="text" x="18" y="130">+ email: string</text>
+    <text class="text" x="18" y="156">- password_hash: string</text>
+    <text class="text" x="18" y="182">+ role: ADMIN | SECRETARIA</text>
+    <text class="text" x="18" y="208">+ created_at: Date</text>
+    <text class="text" x="18" y="234">+ updated_at: Date</text>
+  </g>
+
+  <g transform="translate(505 130)">
+    <rect class="class-box" width="340" height="330"/>
+    <rect class="class-title" width="340" height="48" rx="8"/>
+    <text class="title-text" x="170" y="31" text-anchor="middle">NavigationNode</text>
+    <line class="section-line" x1="0" x2="340" y1="48" y2="48"/>
+    <text class="text" x="18" y="78">+ id: bigint</text>
+    <text class="text" x="18" y="104">+ parent_id: bigint?</text>
+    <text class="text" x="18" y="130">+ title: string</text>
+    <text class="text" x="18" y="156">+ slug: string</text>
+    <text class="text" x="18" y="182">+ prompt: string?</text>
+    <text class="text" x="18" y="208">+ answer_summary: text?</text>
+    <text class="text" x="18" y="234">+ evidence_excerpt: text?</text>
+    <text class="text" x="18" y="260">+ evidence_source: string?</text>
+    <text class="text" x="18" y="286">+ display_order: number</text>
+    <text class="text" x="18" y="312">+ is_active: boolean</text>
+  </g>
+
+  <g transform="translate(940 130)">
+    <rect class="class-box" width="310" height="278"/>
+    <rect class="class-title" width="310" height="48" rx="8"/>
+    <text class="title-text" x="155" y="31" text-anchor="middle">Inquiry</text>
+    <line class="section-line" x1="0" x2="310" y1="48" y2="48"/>
+    <text class="text" x="18" y="78">+ id: bigint</text>
+    <text class="text" x="18" y="104">+ requester_name: string</text>
+    <text class="text" x="18" y="130">+ requester_email: string</text>
+    <text class="text" x="18" y="156">+ question: text</text>
+    <text class="text" x="18" y="182">+ status: ABERTA | RESPONDIDA</text>
+    <text class="text" x="18" y="208">+ answered_by: UUID?</text>
+    <text class="text" x="18" y="234">+ created_at: Date</text>
+    <text class="text" x="18" y="260">+ updated_at: Date</text>
+  </g>
+
+  <g transform="translate(505 545)">
+    <rect class="class-box" width="340" height="226"/>
+    <rect class="class-title" width="340" height="48" rx="8"/>
+    <text class="title-text" x="170" y="31" text-anchor="middle">InteractionLog</text>
+    <line class="section-line" x1="0" x2="340" y1="48" y2="48"/>
+    <text class="text" x="18" y="78">+ id: bigint</text>
+    <text class="text" x="18" y="104">+ session_id: UUID</text>
+    <text class="text" x="18" y="130">+ navigation_flow: JSON[]</text>
+    <text class="text" x="18" y="156">+ inquiry_ids: number[]</text>
+    <text class="text" x="18" y="182">+ flag: ATENDEU | NAO_ATENDEU?</text>
+    <text class="text" x="18" y="208">+ feedback_comment: text?</text>
+  </g>
+
+  <g transform="translate(70 545)">
+    <rect class="class-box" width="310" height="174"/>
+    <rect class="class-title" width="310" height="48" rx="8"/>
+    <text class="title-text" x="155" y="31" text-anchor="middle">AuthSession</text>
+    <line class="section-line" x1="0" x2="310" y1="48" y2="48"/>
+    <text class="text" x="18" y="78">+ token: JWT</text>
+    <text class="text" x="18" y="104">+ user: User</text>
+    <text class="text" x="18" y="130">+ login(email, password)</text>
+    <text class="text" x="18" y="156">+ logout()</text>
+  </g>
+
+  <path class="relation" d="M 380 610 C 440 610 445 250 505 250"/>
+  <text class="label" x="410" y="430">administra</text>
+
+  <path class="relation" d="M 380 250 C 610 65 1015 70 1095 130"/>
+  <text class="label" x="690" y="96">0..* responde</text>
+
+  <path class="relation" d="M 675 460 C 675 500 675 505 675 545"/>
+  <text class="label" x="692" y="507">registra fluxo</text>
+
+  <path class="relation-dashed" d="M 845 660 C 920 660 980 460 1095 408"/>
+  <text class="label" x="910" y="560">referencia duvidas</text>
+
+  <path class="relation" d="M 845 250 C 895 250 895 185 845 185"/>
+  <text class="label" x="868" y="220">0..* filhos</text>
+
+  <path class="relation" d="M 225 545 C 225 500 225 425 225 380"/>
+  <text class="label" x="246" y="470">autentica</text>
+</svg>

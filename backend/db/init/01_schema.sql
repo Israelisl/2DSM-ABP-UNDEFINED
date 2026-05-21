@@ -16,20 +16,6 @@ BEGIN
 END;
 $$;
 
-CREATE TABLE IF NOT EXISTS satisfaction_feedback (
-  id BIGSERIAL PRIMARY KEY,
-  interaction_log_id BIGINT REFERENCES interaction_logs(id) ON DELETE CASCADE,
-  flag satisfaction_flag NOT NULL,
-  comment TEXT,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_satisfaction_feedback_interaction_log_id
-  ON satisfaction_feedback(interaction_log_id);
-
-CREATE INDEX IF NOT EXISTS idx_satisfaction_feedback_flag
-  ON satisfaction_feedback(flag);
-
 CREATE TABLE IF NOT EXISTS users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(120) NOT NULL,
@@ -75,6 +61,7 @@ CREATE TABLE IF NOT EXISTS interaction_logs (
   navigation_flow JSONB NOT NULL DEFAULT '[]'::jsonb,
   inquiry_ids JSONB NOT NULL DEFAULT '[]'::jsonb,
   flag satisfaction_flag,
+  feedback_comment TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
@@ -258,6 +245,17 @@ BEGIN
     ADD COLUMN inquiry_ids JSONB NOT NULL DEFAULT '[]'::jsonb;
   END IF;
 
+  IF NOT EXISTS (
+    SELECT 1
+    FROM information_schema.columns
+    WHERE table_schema = 'public'
+      AND table_name = 'interaction_logs'
+      AND column_name = 'feedback_comment'
+  ) THEN
+    ALTER TABLE interaction_logs
+    ADD COLUMN feedback_comment TEXT;
+  END IF;
+
   IF EXISTS (
     SELECT 1
     FROM information_schema.columns
@@ -275,8 +273,6 @@ BEGIN
     ALTER TABLE interaction_logs
     DROP COLUMN inquiry_id;
   END IF;
-
-  DROP TABLE IF EXISTS satisfaction_feedback;
 END;
 $$;
 

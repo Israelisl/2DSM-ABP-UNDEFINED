@@ -1,12 +1,12 @@
-// frontend/src/hooks/useChat.ts
-import { useState, useEffect, useRef } from 'react';
-import { chatService, type NavigationNode } from '../services/chatService';
+import { useEffect, useRef, useState } from "react";
+import { chatService, type NavigationNode } from "../services/chatService";
+import type { NavigationFlowEntry } from "../services/logService";
 
-export type DisplayOption = NavigationNode | { title: 'Voltar'; slug: '__back' };
+export type DisplayOption = NavigationNode | { title: "Voltar"; slug: "__back" };
 
 export type Message = {
   id: number;
-  sender: 'bot' | 'user';
+  sender: "bot" | "user";
   text: string;
   html?: boolean;
   evidence_source?: string | null;
@@ -18,41 +18,45 @@ type NavigationLevel = {
   options: DisplayOption[];
 };
 
-const BACK_OPTION: DisplayOption = { title: 'Voltar', slug: '__back' };
+const BACK_OPTION: DisplayOption = { title: "Voltar", slug: "__back" };
 
 export function useChat() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, sender: 'bot', text: 'Para qual curso você deseja atendimento?' }
+    { id: 1, sender: "bot", text: "Para qual curso voce deseja atendimento?" },
   ]);
   const [currentOptions, setCurrentOptions] = useState<DisplayOption[]>([]);
   const [history, setHistory] = useState<NavigationLevel[]>([]);
   const [currentLevel, setCurrentLevel] = useState<NavigationLevel | null>(null);
+  const [navigationFlow, setNavigationFlow] = useState<NavigationFlowEntry[]>([]);
+  const [sessionId] = useState(() => crypto.randomUUID());
   const bottomRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      bottomRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [messages, currentOptions]);
 
   useEffect(() => {
-    (async () => {
+    async function loadRootOptions() {
       try {
         const rootOptions = await chatService.fetchRoot();
-        setCurrentLevel({ slug: null, title: 'root', options: rootOptions });
+        setCurrentLevel({ slug: null, title: "root", options: rootOptions });
         setCurrentOptions(rootOptions);
       } catch (error) {
         console.error(error);
-        setMessages(prev => [
-          ...prev,
+        setMessages((previousMessages) => [
+          ...previousMessages,
           {
             id: Date.now(),
-            sender: 'bot',
-            text: 'Não foi possível carregar as opções de atendimento no momento. Tente novamente mais tarde.'
-          }
+            sender: "bot",
+            text: "Nao foi possivel carregar as opcoes de atendimento no momento. Tente novamente mais tarde.",
+          },
         ]);
       }
-    })();
+    }
+
+    void loadRootOptions();
   }, []);
 
   const buildOptions = (children: NavigationNode[], canGoBack: boolean) => {
@@ -62,53 +66,65 @@ export function useChat() {
 
   const getBotText = (node: NavigationNode, children: NavigationNode[]) => {
     if (node.answer_summary) return node.answer_summary;
-    if (children.length > 0) return `Entendido! O que você deseja saber sobre ${node.title}?`;
-    return `Ainda não temos uma resposta detalhada para "${node.title}".`;
+    if (children.length > 0) return `Entendido! O que voce deseja saber sobre ${node.title}?`;
+    return `Ainda nao temos uma resposta detalhada para "${node.title}".`;
   };
 
   const handleChoice = async (option: DisplayOption) => {
-    setMessages(prev => [...prev, { id: Date.now(), sender: 'user', text: option.title }]);
+    setMessages((previousMessages) => [
+      ...previousMessages,
+      { id: Date.now(), sender: "user", text: option.title },
+    ]);
 
-    if (option.slug === '__back') {
+    if (option.slug === "__back") {
       const previous = history[history.length - 1];
       if (!previous) return;
 
-      setHistory(prev => prev.slice(0, -1));
+      setHistory((previousHistory) => previousHistory.slice(0, -1));
       setCurrentLevel(previous);
       setCurrentOptions(previous.options);
       return;
     }
 
+    setNavigationFlow((previousFlow) => [
+      ...previousFlow,
+      {
+        slug: option.slug,
+        title: option.title,
+        selectedAt: new Date().toISOString(),
+      },
+    ]);
+
     try {
       const data = await chatService.fetchChildren(option.slug);
       const nextOptions = buildOptions(data.children, true);
 
-      setMessages(prev => [
-        ...prev,
+      setMessages((previousMessages) => [
+        ...previousMessages,
         {
           id: Date.now() + 1,
-          sender: 'bot',
+          sender: "bot",
           text: getBotText(data.parent, data.children),
           html: Boolean(data.parent.answer_summary),
-          evidence_source: data.parent.evidence_source
-        }
+          evidence_source: data.parent.evidence_source,
+        },
       ]);
 
-      if (currentLevel) setHistory(prev => [...prev, currentLevel]);
+      if (currentLevel) setHistory((previousHistory) => [...previousHistory, currentLevel]);
       setCurrentLevel({ slug: option.slug, title: option.title, options: nextOptions });
       setCurrentOptions(nextOptions);
     } catch (error) {
       console.error(error);
-      setMessages(prev => [
-        ...prev,
+      setMessages((previousMessages) => [
+        ...previousMessages,
         {
           id: Date.now() + 1,
-          sender: 'bot',
-          text: 'Não foi possível carregar a resposta desejada no momento. Por favor, tente outra opção.'
-        }
+          sender: "bot",
+          text: "Nao foi possivel carregar a resposta desejada no momento. Por favor, tente outra opcao.",
+        },
       ]);
     }
   };
 
-  return { messages, currentOptions, bottomRef, handleChoice };
+  return { messages, currentOptions, bottomRef, handleChoice, navigationFlow, sessionId };
 }

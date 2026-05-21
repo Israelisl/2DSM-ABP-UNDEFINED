@@ -1,19 +1,50 @@
-// frontend/src/services/authService.ts
+import { apiRequest, getStoredToken } from "./apiClient";
 
-const API_PREFIX = import.meta.env.VITE_API_URL ?? '';
+export type UserRole = "ADMIN" | "SECRETARIA";
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+};
+
+export type AuthResponse = {
+  token: string;
+  user: AuthUser;
+};
+
+const USER_STORAGE_KEY = "user";
 
 export const authService = {
-  async login(username: string, password: string): Promise<{ token: string }> {
-    const response = await fetch(`${API_PREFIX}/auth/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }), // Envia login e senha conforme o RF09
+  login(email: string, password: string) {
+    return apiRequest<AuthResponse>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
     });
+  },
 
-    if (!response.ok) {
-      throw new Error('Usuário ou senha inválidos.');
+  getStoredToken,
+
+  getStoredUser() {
+    const storedUser = localStorage.getItem(USER_STORAGE_KEY);
+    if (!storedUser) return null;
+
+    try {
+      return JSON.parse(storedUser) as AuthUser;
+    } catch {
+      localStorage.removeItem(USER_STORAGE_KEY);
+      return null;
     }
+  },
 
-    return response.json(); // Retorna o objeto contendo o JWT enviado pelo backend
-  }
+  storeSession(data: AuthResponse) {
+    localStorage.setItem("token", data.token);
+    localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(data.user));
+  },
+
+  logout() {
+    localStorage.removeItem("token");
+    localStorage.removeItem(USER_STORAGE_KEY);
+  },
 };
