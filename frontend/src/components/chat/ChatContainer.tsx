@@ -1,6 +1,7 @@
-// frontend/src/components/chat/ChatContainer.tsx
-import { useEffect, useState } from "react";
-import { useChat } from "../../hooks/useChat";
+import { useState, type FormEvent } from "react";
+import { useChat, type DisplayOption } from "../../hooks/useChat";
+import { inquiryService } from "../../services/inquiryService";
+import { logService, type FeedbackFlag } from "../../services/logService";
 import { MessageBubble } from "./MessageBubble";
 import { OptionButton } from "./OptionButton";
 
@@ -10,7 +11,7 @@ type LocalMessage = {
   text: string;
 };
 
-type FormData = {
+type QuestionFormData = {
   nome: string;
   email: string;
   duvida: string;
@@ -18,189 +19,218 @@ type FormData = {
 
 type FeedbackType = "positivo" | "negativo" | null;
 
+const initialQuestionForm: QuestionFormData = {
+  nome: "",
+  email: "",
+  duvida: "",
+};
+
+function mapFeedback(type: FeedbackType): FeedbackFlag {
+  return type === "positivo" ? "ATENDEU" : "NAO_ATENDEU";
+}
+
 export function ChatContainer() {
-  const { messages, currentOptions, bottomRef, handleChoice } = useChat();
+  const { messages, currentOptions, bottomRef, handleChoice, navigationFlow, sessionId } = useChat();
 
   const [localMessages, setLocalMessages] = useState<LocalMessage[]>([]);
   const [showQuestionForm, setShowQuestionForm] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [showFeedbackComment, setShowFeedbackComment] = useState(false);
   const [hasInteraction, setHasInteraction] = useState(false);
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [questionLoading, setQuestionLoading] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
 
   const [feedbackType, setFeedbackType] = useState<FeedbackType>(null);
   const [feedbackComment, setFeedbackComment] = useState("");
+  const [formData, setFormData] = useState<QuestionFormData>(initialQuestionForm);
 
-  const [formData, setFormData] = useState<FormData>({
-    nome: "",
-    email: "",
-    duvida: "",
-  });
+  const shouldShowFeedback =
+    hasInteraction &&
+    currentOptions.length === 1 &&
+    currentOptions[0]?.slug === "__back" &&
+    !showQuestionForm &&
+    !showFeedbackComment &&
+    !feedbackSubmitted;
 
-  useEffect(() => {
-    const isFinalAnswer =
-      hasInteraction &&
-      currentOptions.length === 1 &&
-      currentOptions[0]?.slug === "__back";
-
-    setShowFeedback(
-      isFinalAnswer && !showQuestionForm && !showFeedbackComment
-    );
-  }, [currentOptions, hasInteraction, showQuestionForm, showFeedbackComment]);
-
-  const openQuestionForm = () => {
-    setLocalMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        sender: "user",
-        text: "📩 Enviar pergunta",
-      },
-      {
-        id: Date.now() + 1,
-        sender: "bot",
-        text: "Preencha o formulário abaixo para enviar sua dúvida à secretaria.",
-      },
-    ]);
-
-    setShowQuestionForm(true);
-    setShowFeedback(false);
-    setShowFeedbackComment(false);
-    setFeedbackType(null);
+  const pushLocalMessages = (...newMessages: LocalMessage[]) => {
+    setLocalMessages((previousMessages) => [...previousMessages, ...newMessages]);
   };
 
-  const handleSubmitQuestion = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
-    setLocalMessages((prev) => [
-      ...prev,
+  const openQuestionForm = () => {
+    pushLocalMessages(
       {
         id: Date.now(),
         sender: "user",
-        text: `Nome: ${formData.nome}\nE-mail: ${formData.email}\nDúvida: ${formData.duvida}`,
+        text: "Enviar pergunta",
       },
       {
         id: Date.now() + 1,
         sender: "bot",
-        text: "Sua pergunta foi enviada com sucesso. A secretaria responderá em breve.",
+        text: "Preencha o formulario abaixo para enviar sua duvida a secretaria.",
       },
-    ]);
+    );
 
-    setFormData({
-      nome: "",
-      email: "",
-      duvida: "",
-    });
-
-    setShowQuestionForm(false);
-    setShowFeedback(false);
+    setShowQuestionForm(true);
     setShowFeedbackComment(false);
     setFeedbackType(null);
+    setFeedbackSubmitted(true);
+  };
+
+  const handleSubmitQuestion = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setQuestionLoading(true);
+
+    try {
+      const inquiry = await inquiryService.create({
+        requester_name: formData.nome.trim(),
+        requester_email: formData.email.trim(),
+        question: formData.duvida.trim(),
+      });
+
+      await logService.create({
+        sessionId,
+        navigationFlow,
+        inquiryIds: [inquiry.id],
+      });
+
+      pushLocalMessages(
+        {
+          id: Date.now(),
+          sender: "user",
+          text: `Nome: ${formData.nome}\nE-mail: ${formData.email}\nDuvida: ${formData.duvida}`,
+        },
+        {
+          id: Date.now() + 1,
+          sender: "bot",
+          text: "Sua pergunta foi enviada com sucesso. A secretaria respondera em breve.",
+        },
+      );
+
+      setFormData(initialQuestionForm);
+      setShowQuestionForm(false);
+      setShowFeedbackComment(false);
+      setFeedbackType(null);
+      setFeedbackSubmitted(true);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Nao foi possivel enviar a pergunta.";
+      pushLocalMessages({
+        id: Date.now(),
+        sender: "bot",
+        text: errorMessage,
+      });
+    } finally {
+      setQuestionLoading(false);
+    }
   };
 
   const handleFeedback = (type: "positivo" | "negativo") => {
     setFeedbackType(type);
-
-    setLocalMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        sender: "user",
-        text: type === "positivo" ? "👍 Sim, ajudou" : "👎 Não ajudou",
-      },
-    ]);
-
-    setShowFeedback(false);
+    pushLocalMessages({
+      id: Date.now(),
+      sender: "user",
+      text: type === "positivo" ? "Sim, ajudou" : "Nao ajudou",
+    });
     setShowFeedbackComment(true);
   };
 
-  const submitFeedbackComment = () => {
-    setLocalMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        sender: "user",
-        text: feedbackComment.trim()
-          ? `Comentário: ${feedbackComment}`
-          : "Comentário: não informado",
-      },
-      {
-        id: Date.now() + 1,
-        sender: "bot",
-        text:
-          feedbackType === "positivo"
-            ? "Obrigado pelo feedback positivo!"
-            : "Obrigado pelo feedback. Vamos utilizar isso para melhorar o atendimento.",
-      },
-    ]);
+  const submitFeedbackComment = async () => {
+    if (!feedbackType) return;
 
-    setFeedbackComment("");
-    setShowFeedback(false);
-    setShowFeedbackComment(false);
-    setFeedbackType(null);
+    setFeedbackLoading(true);
+
+    try {
+      await logService.create({
+        sessionId,
+        navigationFlow,
+        flag: mapFeedback(feedbackType),
+        feedbackComment: feedbackComment.trim() || null,
+      });
+
+      pushLocalMessages(
+        {
+          id: Date.now(),
+          sender: "user",
+          text: feedbackComment.trim()
+            ? `Comentario: ${feedbackComment}`
+            : "Comentario: nao informado",
+        },
+        {
+          id: Date.now() + 1,
+          sender: "bot",
+          text:
+            feedbackType === "positivo"
+              ? "Obrigado pelo feedback positivo!"
+              : "Obrigado pelo feedback. Vamos utilizar isso para melhorar o atendimento.",
+        },
+      );
+
+      setFeedbackComment("");
+      setShowFeedbackComment(false);
+      setFeedbackType(null);
+      setFeedbackSubmitted(true);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Nao foi possivel enviar o feedback.";
+      pushLocalMessages({
+        id: Date.now(),
+        sender: "bot",
+        text: errorMessage,
+      });
+    } finally {
+      setFeedbackLoading(false);
+    }
   };
 
-  const handleOptionClick = (opt: { slug: string; title: string }) => {
+  const handleOptionClick = (option: DisplayOption) => {
     setHasInteraction(true);
-
-    handleChoice(opt);
-
+    void handleChoice(option);
     setShowQuestionForm(false);
-    setShowFeedback(false);
     setShowFeedbackComment(false);
     setFeedbackType(null);
+    setFeedbackSubmitted(false);
   };
 
   return (
     <div className="sd-chat-body-wrapper">
       <header className="sd-chat-header">
         <div className="sd-chat-header-text">
-          <h1>Secretaria Digital - Fatec Jacareí</h1>
-          <p>Atendimento público para alunos e interessados</p>
+          <h1>Secretaria Digital - Fatec Jacarei</h1>
+          <p>Atendimento publico para alunos e interessados</p>
         </div>
       </header>
 
       <div className="sd-chat-body">
-        {messages.map((msg) => (
+        {messages.map((message) => (
           <MessageBubble
-            key={msg.id}
-            sender={msg.sender}
-            html={msg.html}
-            evidence_source={msg.evidence_source}
+            key={message.id}
+            sender={message.sender}
+            html={message.html}
+            evidence_source={message.evidence_source}
           >
-            {msg.text}
+            {message.text}
           </MessageBubble>
         ))}
 
-        {localMessages.map((msg) => (
-          <MessageBubble key={msg.id} sender={msg.sender}>
-            {msg.text}
+        {localMessages.map((message) => (
+          <MessageBubble key={message.id} sender={message.sender}>
+            {message.text}
           </MessageBubble>
         ))}
 
-        {showFeedback && (
+        {shouldShowFeedback && (
           <div className="sd-feedback-box">
-            <p>Essa resposta ajudou você?</p>
+            <p>Essa resposta ajudou voce?</p>
 
             <div className="sd-feedback-buttons">
-              <button
-                className="sd-feedback-positive"
-                onClick={() => handleFeedback("positivo")}
-              >
-                👍 Sim
+              <button className="sd-feedback-positive" onClick={() => handleFeedback("positivo")}>
+                Sim
               </button>
 
-              <button
-                className="sd-feedback-negative"
-                onClick={() => handleFeedback("negativo")}
-              >
-                👎 Não
+              <button className="sd-feedback-negative" onClick={() => handleFeedback("negativo")}>
+                Nao
               </button>
 
-              <button
-                className="sd-feedback-question"
-                onClick={openQuestionForm}
-              >
-                📩 Enviar pergunta
+              <button className="sd-feedback-question" onClick={openQuestionForm}>
+                Enviar pergunta
               </button>
             </div>
           </div>
@@ -209,22 +239,18 @@ export function ChatContainer() {
         {showFeedbackComment && (
           <div className="sd-feedback-comment">
             <p className="sd-feedback-comment-title">
-              {feedbackType === "positivo"
-                ? "Deseja deixar algum comentário positivo?"
-                : "O que podemos melhorar?"}
+              {feedbackType === "positivo" ? "Deseja deixar algum comentario?" : "O que podemos melhorar?"}
             </p>
 
             <textarea
-              placeholder={
-                feedbackType === "positivo"
-                  ? "Digite seu comentário..."
-                  : "Descreva o que podemos melhorar..."
-              }
+              placeholder="Digite seu comentario..."
               value={feedbackComment}
-              onChange={(e) => setFeedbackComment(e.target.value)}
+              onChange={(event) => setFeedbackComment(event.target.value)}
             />
 
-            <button onClick={submitFeedbackComment}>Enviar Feedback</button>
+            <button onClick={submitFeedbackComment} disabled={feedbackLoading}>
+              {feedbackLoading ? "Enviando..." : "Enviar feedback"}
+            </button>
           </div>
         )}
 
@@ -234,12 +260,7 @@ export function ChatContainer() {
               type="text"
               placeholder="Nome"
               value={formData.nome}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  nome: e.target.value,
-                })
-              }
+              onChange={(event) => setFormData({ ...formData, nome: event.target.value })}
               required
             />
 
@@ -247,43 +268,35 @@ export function ChatContainer() {
               type="email"
               placeholder="E-mail"
               value={formData.email}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  email: e.target.value,
-                })
-              }
+              onChange={(event) => setFormData({ ...formData, email: event.target.value })}
               required
             />
 
             <textarea
-              placeholder="Digite sua dúvida"
+              placeholder="Digite sua duvida"
               value={formData.duvida}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  duvida: e.target.value,
-                })
-              }
+              onChange={(event) => setFormData({ ...formData, duvida: event.target.value })}
               required
             />
 
-            <button type="submit">Enviar</button>
+            <button type="submit" disabled={questionLoading}>
+              {questionLoading ? "Enviando..." : "Enviar"}
+            </button>
           </form>
         )}
 
         <div className="sd-chip-row">
-          {currentOptions.map((opt) => (
+          {currentOptions.map((option) => (
             <OptionButton
-              key={opt.slug}
-              label={opt.title}
-              onClick={() => handleOptionClick(opt)}
+              key={option.slug}
+              label={option.title}
+              onClick={() => handleOptionClick(option)}
             />
           ))}
 
           <OptionButton
             key="enviar-pergunta-secretaria"
-            label="Enviar Pergunta para Secretaria"
+            label="Enviar pergunta para secretaria"
             onClick={openQuestionForm}
           />
         </div>

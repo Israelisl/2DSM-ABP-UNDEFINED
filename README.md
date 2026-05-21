@@ -742,7 +742,7 @@ docker-compose up --build
         <td>Listar dúvidas enviadas</td>
         <td>3</td>
         <td>João</td>
-        <td>⏳</td>
+        <td>✅</td>
         <td>RF06</td>
     </tr>
     <tr>
@@ -750,7 +750,7 @@ docker-compose up --build
         <td>Atualizar status das dúvidas</td>
         <td>3</td>
         <td>Nadla</td>
-        <td>⏳</td>
+        <td>✅</td>
         <td>RF06</td>
     </tr>
     <tr>
@@ -758,7 +758,7 @@ docker-compose up --build
         <td>Mostrar status da dúvida ao usuário</td>
         <td>2</td>
         <td>João</td>
-        <td>⏳</td>
+        <td>✅</td>
         <td>RF06</td>
     </tr>
     <tr>
@@ -801,7 +801,7 @@ docker-compose up --build
         <td>Integrar rotas de autenticação com o frontend (Login/RBAC)</td>
         <td>3</td>
         <td>Pedro</td>
-        <td>⏳</td>
+        <td>✅</td>
         <td>RF03, RF09, RF10, RF11</td>
     </tr>
     <tr>
@@ -809,7 +809,7 @@ docker-compose up --build
         <td>Integrar rotas do sistema de dúvidas com o frontend</td>
         <td>2</td>
         <td>Pedro</td>
-        <td>⏳</td>
+        <td>✅</td>
         <td>RF05, RF06</td>
     </tr>
     <tr>
@@ -817,7 +817,7 @@ docker-compose up --build
         <td>Integrar rotas de logs e feedback com o frontend</td>
         <td>2</td>
         <td>Pedro</td>
-        <td>⏳</td>
+        <td>✅</td>
         <td>RF07, RF08</td>
     </tr>
     <tr>
@@ -825,7 +825,7 @@ docker-compose up --build
         <td>Realizar testes de integração ponta a ponta (End-to-End)</td>
         <td>2</td>
         <td>Pedro</td>
-        <td>⏳</td>
+        <td>✅</td>
         <td>RF01, RF05, RF09</td>
     </tr>
 </table>
@@ -854,7 +854,7 @@ docker-compose up --build
         <td>Criação do Diagrama de Sequência</td>
         <td>5</td>
         <td></td>
-        <td>❌</td>
+        <td>⏳</td>
         <td>RNF04</td>
     </tr>
     <tr>
@@ -865,7 +865,7 @@ docker-compose up --build
         <td>Implementar logout de usuário</td>
         <td>2</td>
         <td></td>
-        <td>❌</td>
+        <td>⏳</td>
         <td>RF09</td>
     </tr>
     <tr>
@@ -873,7 +873,7 @@ docker-compose up --build
         <td>Melhorar tratamento de erros de autenticação</td>
         <td>2</td>
         <td></td>
-        <td>❌</td>
+        <td>⏳</td>
         <td>RF09, RF11</td>
     </tr>
    <tr>
@@ -884,7 +884,7 @@ docker-compose up --build
         <td>Monitorar fluxo de utilização via logs</td>
         <td>2</td>
         <td></td>
-        <td>❌</td>
+        <td>⏳</td>
         <td>RF08</td>
     </tr>
     <tr>
@@ -892,7 +892,7 @@ docker-compose up --build
         <td>Testar persistência dos dados de log e feedback</td>
         <td>2</td>
         <td></td>
-        <td>❌</td>
+        <td>⏳</td>
         <td>RF07, RF08</td>
     </tr>
     <tr>

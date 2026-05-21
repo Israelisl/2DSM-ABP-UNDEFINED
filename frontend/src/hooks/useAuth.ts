@@ -1,35 +1,36 @@
-// frontend/src/hooks/useAuth.ts
-import { useState } from 'react';
-import { authService } from '../services/authService';
+import { useState } from "react";
+import { authService, type AuthUser } from "../services/authService";
 
 export function useAuth() {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [token, setToken] = useState<string | null>(() => authService.getStoredToken());
+  const [user, setUser] = useState<AuthUser | null>(() => authService.getStoredUser());
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const login = async (username: string, password: string) => {
+  const login = async (email: string, password: string) => {
     setLoading(true);
     setError(null);
+
     try {
-      const data = await authService.login(username, password);
-      
-      // Armazena o token JWT com segurança no localStorage do navegador (RNF08)
-      localStorage.setItem('token', data.token);
+      const data = await authService.login(email, password);
+      authService.storeSession(data);
       setToken(data.token);
-      return true;
+      setUser(data.user);
+      return data.user;
     } catch (err) {
       const errorInstance = err as Error;
-      setError(errorInstance.message || 'Erro ao realizar login.');
-      return false;
+      setError(errorInstance.message || "Erro ao realizar login.");
+      return null;
     } finally {
       setLoading(false);
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    authService.logout();
     setToken(null);
+    setUser(null);
   };
 
-  return { token, error, loading, login, logout, isAuthenticated: !!token };
+  return { token, user, error, loading, login, logout, isAuthenticated: !!token };
 }

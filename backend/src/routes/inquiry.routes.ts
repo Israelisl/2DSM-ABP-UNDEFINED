@@ -14,5 +14,6 @@ router.post("/", createInquiry);
 // Atualiza apenas o status da duvida, mantendo essa acao separada da criacao.
 // Tambem exige login para registrar quem marcou a duvida como respondida.
 router.patch("/:id/status", authMiddleware, requireRole("ADMIN", "SECRETARIA"), updateInquiryStatus);
+router.put("/:id/status", authMiddleware, requireRole("ADMIN", "SECRETARIA"), updateInquiryStatus);
 
 export default router;

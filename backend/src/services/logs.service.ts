@@ -6,6 +6,7 @@ export const logsService = {
         navigationFlow: unknown[];
         inquiryIds?: number[];
         flag?: "ATENDEU" | "NAO_ATENDEU";
+        feedbackComment?: string | null;
     }) {
         return logsRepository.create(data);
     },
