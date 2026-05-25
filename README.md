@@ -20,6 +20,14 @@
 <h2 id="planejamento-de-sprints">🚀 Planejamento de Sprints</h2>
 <ul>
     <li>
+    <a href="#documentacao">🗎 Documentação</a>
+    <ul>
+    <li><a href="#bancodedados">🗃️ Banco de dados</a></li>
+    <li><a href="#casosdeuso">📊 Diagrama de casos de uso</a></li>
+    <li><a href="#classes">📊 Diagrama de classes</a></li>
+    </ul>
+    </li>
+    <li>
         <a href="#sprint1">⏱️ Sprint 1</a>
         <ul>
             <li><a href="#backlogsprint1">📋 Backlog</a></li>
@@ -999,3 +1007,6 @@ docker-compose up --build
 
 <h3 id="casosdeuso">Casos de uso</h3>
 <p><img src="./docs/sprint1/CasosDeUso.png" alt="Diagrama de Casos de Uso"></p>
+
+<h3 id="classes">Diagrama de classes</h3>
+<p><img src="./docs/sprint2/DiagramaDeClasses.png" alt="Diagrama de Classes"></p>
