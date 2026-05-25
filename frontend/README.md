@@ -1,72 +1,97 @@
-# Frontend — FATEC Jacareí - 2DSM ABP Undefined
+# Frontend
 
-Interface web do sistema de autoatendimento da Secretaria Acadêmica da FATEC Jacareí, desenvolvida em React com TypeScript.
+Interface web do sistema Secretaria Digital da FATEC Jacareí, desenvolvida em React com TypeScript.
 
-## 🛠️ Tecnologias
+## Responsabilidade
 
-- React 18
+Esta pasta contém a aplicação frontend responsável pelo chatbot público, tela de login e painel administrativo usado por perfis internos.
+
+## Tecnologias
+
+- React 19
 - TypeScript
 - Vite
 - CSS
 
-## 📁 Estrutura de Pastas
+## Organização
 
-```
+```txt
 frontend/
-├── public/
-│   └── assets/
-│       ├── pdf/        # Documentos oficiais (regulamentos, calendário, PPCs)
-│       └── png/        # Imagens de horários de aula
-├── src/
-│   ├── components/     # Componentes reutilizáveis (ChatContainer, Message, OptionButton)
-│   ├── services/       # Comunicação com o backend (API)
-│   ├── pages/          # Páginas da aplicação (Chat, Login, Admin)
-│   └── main.tsx        # Ponto de entrada da aplicação
-├── index.html
-└── vite.config.ts
+|-- public/
+|   |-- assets/
+|   |   |-- pdf/    # Documentos oficiais em PDF
+|   |   `-- png/    # Imagens públicas usadas pelo atendimento
+|   |-- favicon.svg
+|   `-- icons.svg
+|-- src/
+|   |-- components/ # Componentes de chat, login, layout e painel
+|   |-- hooks/      # Hooks de autenticação e navegação do chat
+|   |-- services/   # Comunicação com a API backend
+|   |-- assets/     # Imagens importadas pela aplicação
+|   |-- App.tsx
+|   `-- main.tsx
+|-- index.html
+|-- vite.config.ts
+|-- package.json
+`-- tsconfig.json
 ```
 
-## 🚀 Como rodar localmente
+## Como Rodar Localmente
 
 > Recomendado: rodar via Docker Compose a partir da raiz do projeto.
-> Veja as instruções completas no [README principal](../../README.md).
+> Veja as instruções completas no [README principal](../README.md).
+
+```bash
+docker compose up --build
+```
 
 Para rodar apenas o frontend de forma isolada:
 
 ```bash
-# Instalar dependências
 npm install
-
-# Iniciar servidor de desenvolvimento
 npm run dev
 ```
 
-Acesse em: `http://localhost:5173`
+Acesse em:
 
-## 🔗 Integração com o Backend
+```txt
+http://localhost:5173
+```
 
-O frontend consome as seguintes rotas do backend:
+## Integração com o Backend
+
+O frontend consome rotas da API configurada por `VITE_API_URL`.
 
 | Método | Rota | Descrição |
-|--------|------|-----------|
-| GET | `/navigation/menus` | Busca os menus iniciais do chatbot |
-| GET | `/navigation/submenus/:slug` | Busca os submenus de um nó |
-| POST | `/auth/login` | Autenticação de usuários |
-| GET | `/auth/me` | Retorna dados do usuário logado |
-| POST | `/inquiries` | Envia uma dúvida para a secretaria |
+|---|---|---|
+| `GET` | `/navigation/root` | Busca as opções iniciais do chatbot |
+| `GET` | `/navigation/:slug/children` | Busca subopções de um nó de navegação |
+| `GET` | `/navigation` | Lista perguntas/respostas no painel administrativo |
+| `POST` | `/navigation` | Cria item de navegação no painel administrativo |
+| `PUT` | `/navigation/:id` | Atualiza item de navegação |
+| `DELETE` | `/navigation/:id` | Remove item de navegação |
+| `POST` | `/auth/login` | Autentica usuário interno |
+| `GET` | `/auth/me` | Retorna dados do usuário autenticado |
+| `POST` | `/inquiries` | Envia dúvida para a secretaria |
+| `GET` | `/inquiries` | Lista dúvidas no painel administrativo |
+| `PUT` | `/inquiries/:id/status` | Atualiza status de uma dúvida |
+| `POST` | `/logs` | Registra interação, dúvida ou feedback |
+| `GET` | `/logs` | Lista logs para administradores |
 
-## 🌐 Variáveis de Ambiente
+## Variáveis de Ambiente
 
-Crie um arquivo `.env` na raiz do `frontend/` com:
+Para execução isolada do frontend, crie um arquivo `.env` dentro de `frontend/`:
 
 ```env
 VITE_API_URL=http://localhost:3000
 ```
 
-## 👥 Perfis de Acesso
+No Docker Compose, essa variável é definida a partir do `.env` da raiz do projeto.
+
+## Perfis de Acesso
 
 | Perfil | Acesso |
-|--------|--------|
-| Público (aluno) | Chatbot de navegação e envio de dúvidas |
-| SECRETARIA | Painel de gerenciamento de dúvidas |
-| ADMIN | Painel administrativo completo |
+|---|---|
+| Público | Chatbot de navegação e envio de dúvidas |
+| SECRETARIA | Painel de acompanhamento de dúvidas e visualização de perguntas |
+| ADMIN | Painel administrativo com gestão de perguntas, dúvidas e logs |

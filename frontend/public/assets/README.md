@@ -1,30 +1,86 @@
 # Assets - Arquivos Públicos
 
-Esta pasta contém todos os arquivos estáticos (imagens, PDFs, etc.) que são servidos pelo frontend.
+Esta pasta contém arquivos estáticos servidos pelo frontend, como PDFs e imagens usados no atendimento.
 
-## Estrutura
+## Responsabilidade
 
-- `png/` - Imagens em formato PNG (ex: horários de aulas)
-- `pdf/` - Documentos em PDF (calendários, regulamentos, etc.)
+Os arquivos dentro de `frontend/public/assets/` ficam disponíveis publicamente pela aplicação Vite.
 
-## Como adicionar arquivos
+Em ambiente local, eles podem ser acessados a partir de:
 
-1. **Horários (PNG)**:
-   - Coloque os arquivos de horários em `png/`
-   - Exemplo: `horario-aula-1dsm.png`, `horario-aula-2geo.png`
-   - Tamanho recomendado: até 2MB por arquivo
+```txt
+http://localhost:5173/assets/
+```
 
-2. **Documentos (PDF)**:
-   - Coloque os PDFs em `pdf/`
-   - Exemplo: `DSM-PPC.pdf`, `Calendario_Academico_2026.pdf`
+## Organização
 
-## Referências no Banco de Dados
+```txt
+frontend/public/assets/
+|-- pdf/    # Documentos oficiais em PDF
+|-- png/    # Imagens públicas, como horários de aula
+`-- README.md
+```
 
-No seed SQL (`backend/db/init/02_seed.sql`):
-- Use `/assets/png/nome-do-arquivo.png` para imagens
-- Use `/assets/pdf/nome-do-arquivo.pdf` para PDFs
+## Como Adicionar Arquivos
 
-Exemplo no banco:
+### Horários em PNG
+
+Coloque os arquivos de horários em:
+
+```txt
+frontend/public/assets/png/
+```
+
+Exemplos de nomes:
+
+```txt
+horario-aula-1dsm.png
+horario-aula-2dsm.png
+horario-aula-1geo.png
+```
+
+Recomendações:
+
+- Usar nomes descritivos e sem espaços.
+- Preferir letras minúsculas.
+- Conferir se o arquivo está versionado no Git.
+- Manter imagens com tamanho adequado para carregamento no navegador.
+
+### Documentos em PDF
+
+Coloque os documentos em:
+
+```txt
+frontend/public/assets/pdf/
+```
+
+Exemplos:
+
+```txt
+DSM-PPC.pdf
+Calendario_Academico_2026.pdf
+Regulamento_Geral_dos_Cursos.pdf
+```
+
+Após adicionar um arquivo, confira se qualquer referência no seed ou no banco aponta exatamente para o nome versionado.
+
+## Referências nas Respostas
+
+Arquivos públicos podem ser referenciados em respostas do chatbot usando caminhos como:
+
+```txt
+/assets/pdf/Calendario_Academico_2026.pdf
+/assets/png/horario-aula-1dsm.png
+```
+
+Quando o caminho for salvo no banco como fonte ou link, ele deve apontar para um arquivo realmente existente nesta pasta ou para uma URL externa válida.
+
+## Exemplo no Seed SQL
+
+No seed do banco, um arquivo público pode ser associado a uma resposta por meio do campo `evidence_source`.
+
+Exemplo com um arquivo existente em `frontend/public/assets/png/`:
+
 ```sql
 SELECT upsert_navigation_node(
   'dsm-horario-aulas',
@@ -33,14 +89,43 @@ SELECT upsert_navigation_node(
   NULL,
   'Horário de aulas do 1º semestre.',
   NULL,
-  'assets/png/horario-aula-1dsm.png',  -- <- arquivo será aberto em nova aba
+  '/assets/png/horario-aula-1dsm.png',
   1,
   TRUE
 );
 ```
 
-## Nota sobre o Docker
+Nesse exemplo, o arquivo precisa existir em:
 
-Quando em Docker, os arquivos em `frontend/public/assets/` serão servidos automaticamente pela aplicação Vite em `http://localhost:5173/assets/`.
+```txt
+frontend/public/assets/png/horario-aula-1dsm.png
+```
 
-Ao reconstruir o container, certifique-se de que os arquivos estão presentes antes de fazer `docker-compose up --build`.
+E ficará disponível em:
+
+```txt
+http://localhost:5173/assets/png/horario-aula-1dsm.png
+```
+
+O projeto possui algumas referências legadas com `assets/...`. Para novas referências, prefira o padrão absoluto `/assets/...`, pois ele aponta diretamente para a raiz pública do frontend.
+
+## Nota sobre Docker
+
+Quando executado via Docker Compose, os arquivos em `frontend/public/assets/` são servidos automaticamente pela aplicação Vite em:
+
+```txt
+http://localhost:5173/assets/
+```
+
+Ao reconstruir o container, certifique-se de que os arquivos referenciados pelo seed ou pelo banco estão presentes antes de executar:
+
+```bash
+docker compose up --build
+```
+
+## Cuidados
+
+- Não referenciar arquivos que não estejam versionados.
+- Evitar nomes com espaços.
+- Preferir nomes descritivos em letras minúsculas.
+- Conferir se o arquivo abre corretamente após subir o frontend.

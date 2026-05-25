@@ -86,9 +86,9 @@ cd 2DSM-ABP-UNDEFINED
 </code></pre>
 
 <p><strong>2. Configure as variáveis de ambiente</strong></p>
-<pre><code>cp backend/.env.example backend/.env
+<pre><code>cp .env.example .env
 </code></pre>
-<p>Edite o arquivo <code>backend/.env</code> se necessário. Os valores padrão já funcionam para ambiente local.</p>
+<p>Edite o arquivo <code>.env</code> se necessário. Os valores padrão funcionam para ambiente local, mas o <code>JWT_SECRET</code> deve ser alterado para uma chave segura antes de qualquer uso fora do desenvolvimento.</p>
 
 <p><strong>3. Suba os containers</strong></p>
 <pre><code>docker-compose up --build
@@ -102,9 +102,8 @@ cd 2DSM-ABP-UNDEFINED
 
 <h3>Usuários padrão (criados automaticamente pelo seed)</h3>
 <p>
-    Os usuários de teste padrão para o ambiente de desenvolvimento são gerados automaticamente através do seed do banco de dados. 
-    As credenciais padrão de acesso local (e-mail e senha) para os perfis de <strong>ADMIN</strong> e <strong>SECRETARIA</strong> 
-    estão configuradas diretamente nas variáveis de ambiente do arquivo <code>backend/.env.example</code>.
+    Os usuários de teste do ambiente local são criados automaticamente pelo seed do banco de dados.
+    Essas credenciais existem apenas para desenvolvimento e devem ser alteradas ou removidas antes de qualquer uso fora do ambiente local.
 </p>
 
 <h3>Para resetar o banco de dados</h3>
@@ -128,7 +127,7 @@ docker-compose up --build
     </tr>
     <tr>
         <td>RF02</td>
-        <td>Repositório estruturado contendo nós de navegação, perguntas e respostas, documentos oficiais, trechos indexados (chunks) e metadados da fonte.</td>
+        <td>Repositório estruturado contendo nós de navegação, perguntas, respostas, evidências textuais e links de fonte.</td>
     </tr>
     <tr>
         <td>RF03</td>
@@ -136,7 +135,7 @@ docker-compose up --build
     </tr>
     <tr>
         <td>RF04</td>
-        <td>Administrador pode gerenciar conteúdo (criar, editar, excluir nós), documentos, usuários e visualizar logs.</td>
+    <td>Administrador pode gerenciar conteúdos do chatbot (criar, editar e excluir nós de navegação) e visualizar logs.</td>
     </tr>
     <tr>
         <td>RF05</td>
@@ -144,7 +143,7 @@ docker-compose up --build
     </tr>
     <tr>
         <td>RF06</td>
-        <td>Secretária Acadêmica pode listar perguntas e atualizar status (ex.: em aberto, respondida).</td>
+        <td>Secretária Acadêmica pode listar dúvidas enviadas e atualizar status (ex.: em aberto, respondida).</td>
     </tr>
     <tr>
         <td>RF07</td>
@@ -152,7 +151,7 @@ docker-compose up --build
     </tr>
     <tr>
         <td>RF08</td>
-        <td>Registro de logs contendo fluxo de navegação, perguntas enviadas, avaliação e data/hora.</td>
+        <td>Registro de logs contendo fluxo de navegação, dúvidas enviadas, avaliação e data/hora.</td>
     </tr>
     <tr>
         <td>RF09</td>
@@ -272,7 +271,7 @@ docker-compose up --build
         <td>RF02</td>
         <td>Como sistema, quero manter um repositório de conhecimento estruturado para responder usuários.</td>
         <td>Modelagem do banco definida | Estrutura de dados planejada | Conteúdo inicial disponível</td>
-        <td>Repositório armazena perguntas, respostas, documentos e metadados corretamente</td>
+        <td>Repositório armazena perguntas, respostas, evidências textuais e links de fonte corretamente</td>
     </tr>
     <tr>
         <td>RF03</td>
@@ -294,7 +293,7 @@ docker-compose up --build
     </tr>
     <tr>
         <td>RF06</td>
-        <td>Como secretária, quero gerenciar perguntas enviadas para responder alunos.</td>
+        <td>Como secretária, quero gerenciar dúvidas enviadas para acompanhar solicitações dos usuários.</td>
         <td>Listagem de perguntas definida | Status de atendimento definido</td>
         <td>Secretária visualiza perguntas e atualiza status</td>
     </tr>
@@ -831,7 +830,7 @@ docker-compose up --build
 </table>
 
 <h4 id="burndownsprint2">📉 Burndown Sprint 2</h4>
-<p><em>A definir</em></p>
+<img src="./docs/sprint2/burndown.png" alt="Burndown Sprint 2">
 
 <hr>
 
