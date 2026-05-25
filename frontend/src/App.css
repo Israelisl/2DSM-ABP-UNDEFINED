@@ -801,6 +801,7 @@ select:-webkit-autofill {
 .sd-login-box h2 {
   margin: 0 0 8px;
   font-size: 1.6rem;
+  color: #050505;
 }
 
 .sd-login-box p {
