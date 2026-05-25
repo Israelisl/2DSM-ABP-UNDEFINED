@@ -6,8 +6,12 @@ import authRouter from "./routes/auth.routes";
 import logsRoutes from "./routes/logs.routes";
 
 const app = express();
+const corsOrigin = process.env.CORS_ORIGIN;
 
-app.use(cors());
+app.use(cors({
+    origin: corsOrigin || "http://localhost:5173",
+  }),
+);
 app.use(express.json());
 app.use("/navigation", navigationRoutes);
 app.use("/inquiries", inquiryRoutes); 
