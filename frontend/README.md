@@ -1,73 +1,97 @@
-# React + TypeScript + Vite
+# Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Interface web do sistema Secretaria Digital da FATEC Jacareí, desenvolvida em React com TypeScript.
 
-Currently, two official plugins are available:
+## Responsabilidade
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Esta pasta contém a aplicação frontend responsável pelo chatbot público, tela de login e painel administrativo usado por perfis internos.
 
-## React Compiler
+## Tecnologias
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React 19
+- TypeScript
+- Vite
+- CSS
 
-## Expanding the ESLint configuration
+## Organização
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```txt
+frontend/
+|-- public/
+|   |-- assets/
+|   |   |-- pdf/    # Documentos oficiais em PDF
+|   |   `-- png/    # Imagens públicas usadas pelo atendimento
+|   |-- favicon.svg
+|   `-- icons.svg
+|-- src/
+|   |-- components/ # Componentes de chat, login, layout e painel
+|   |-- hooks/      # Hooks de autenticação e navegação do chat
+|   |-- services/   # Comunicação com a API backend
+|   |-- assets/     # Imagens importadas pela aplicação
+|   |-- App.tsx
+|   `-- main.tsx
+|-- index.html
+|-- vite.config.ts
+|-- package.json
+`-- tsconfig.json
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Como Rodar Localmente
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+> Recomendado: rodar via Docker Compose a partir da raiz do projeto.
+> Veja as instruções completas no [README principal](../README.md).
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+docker compose up --build
 ```
+
+Para rodar apenas o frontend de forma isolada:
+
+```bash
+npm install
+npm run dev
+```
+
+Acesse em:
+
+```txt
+http://localhost:5173
+```
+
+## Integração com o Backend
+
+O frontend consome rotas da API configurada por `VITE_API_URL`.
+
+| Método | Rota | Descrição |
+|---|---|---|
+| `GET` | `/navigation/root` | Busca as opções iniciais do chatbot |
+| `GET` | `/navigation/:slug/children` | Busca subopções de um nó de navegação |
+| `GET` | `/navigation` | Lista perguntas/respostas no painel administrativo |
+| `POST` | `/navigation` | Cria item de navegação no painel administrativo |
+| `PUT` | `/navigation/:id` | Atualiza item de navegação |
+| `DELETE` | `/navigation/:id` | Remove item de navegação |
+| `POST` | `/auth/login` | Autentica usuário interno |
+| `GET` | `/auth/me` | Retorna dados do usuário autenticado |
+| `POST` | `/inquiries` | Envia dúvida para a secretaria |
+| `GET` | `/inquiries` | Lista dúvidas no painel administrativo |
+| `PUT` | `/inquiries/:id/status` | Atualiza status de uma dúvida |
+| `POST` | `/logs` | Registra interação, dúvida ou feedback |
+| `GET` | `/logs` | Lista logs para administradores |
+
+## Variáveis de Ambiente
+
+Para execução isolada do frontend, crie um arquivo `.env` dentro de `frontend/`:
+
+```env
+VITE_API_URL=http://localhost:3000
+```
+
+No Docker Compose, essa variável é definida a partir do `.env` da raiz do projeto.
+
+## Perfis de Acesso
+
+| Perfil | Acesso |
+|---|---|
+| Público | Chatbot de navegação e envio de dúvidas |
+| SECRETARIA | Painel de acompanhamento de dúvidas e visualização de perguntas |
+| ADMIN | Painel administrativo com gestão de perguntas, dúvidas e logs |

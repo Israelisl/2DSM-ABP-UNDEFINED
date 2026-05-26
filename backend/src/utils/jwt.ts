@@ -1,8 +1,6 @@
 import * as jwt from "jsonwebtoken";
 import type { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 
-
-
 type TokenPayload = {
   id: string;
   email: string;
@@ -11,22 +9,29 @@ type TokenPayload = {
 
 type JwtExpiresIn = NonNullable<SignOptions["expiresIn"]>;
 
+const unsafeJwtSecrets = new Set([
+  "jwt-dev-secret",
+  "change-me-in-production",
+]);
 
-function createToken(payload: TokenPayload): string {
-  const secret: Secret = process.env.JWT_SECRET ?? "jwt-dev-secret";
-  const expiresIn = (process.env.JWT_EXPIRES_IN ?? "8h") as JwtExpiresIn;
+function getJwtSecret(): Secret {
+  const secret = process.env.JWT_SECRET?.trim();
 
-  return jwt.sign(payload, secret, { expiresIn });
+  if (!secret || unsafeJwtSecrets.has(secret)) {
+    throw new Error("JWT_SECRET deve ser configurado com um valor seguro.");
+  }
+
+  return secret;
 }
 
+function createToken(payload: TokenPayload): string {
+  const expiresIn = (process.env.JWT_EXPIRES_IN ?? "8h") as JwtExpiresIn;
 
-
+  return jwt.sign(payload, getJwtSecret(), { expiresIn });
+}
 
 function verifyToken(token: string): TokenPayload | null {
-  const decoded = jwt.verify(
-    token,
-    process.env.JWT_SECRET ?? "jwt-dev-secret",
-  ) as JwtPayload;
+  const decoded = jwt.verify(token, getJwtSecret()) as JwtPayload;
 
   if (
     typeof decoded.id !== "string" ||

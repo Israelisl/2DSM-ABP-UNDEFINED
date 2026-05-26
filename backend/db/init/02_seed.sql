@@ -856,3 +856,22 @@ WHERE slug IN (
     'geo-dispensa-extensao',
     'marh-dispensa-extensao'
   );
+
+-- O cadastro administrativo passa a aceitar apenas links externos como apoio.
+-- Registros antigos que apontavam para assets locais permanecem com a resposta em texto,
+-- mas deixam de expor arquivo fisico como fonte da pergunta.
+UPDATE navigation_nodes
+SET evidence_source = NULL,
+    updated_at = NOW()
+WHERE evidence_source IS NOT NULL
+  AND evidence_source !~* '^https?://';
+
+UPDATE navigation_nodes
+SET answer_summary = regexp_replace(
+      answer_summary,
+      '<a\s+href=[''"][^''"]*/assets/[^''"]+[''"][^>]*>[^<]*</a>\.?',
+      '',
+      'gi'
+    ),
+    updated_at = NOW()
+WHERE answer_summary ILIKE '%/assets/%';

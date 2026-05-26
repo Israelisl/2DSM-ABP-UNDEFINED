@@ -1,47 +1,71 @@
-import './App.css';
-import './Header.css';
-import './Footer.css';
-import { ChatContainer } from './components/chat/ChatContainer';
+import { useState } from "react";
+import { Login } from "./components/admin/Login";
+import { ChatContainer } from "./components/chat/ChatContainer";
+import { ScreenSelectorPage } from "./components/panels/ScreenSelectorPage";
+import { authService, type AuthUser } from "./services/authService";
+import "./App.css";
+import "./Footer.css";
+import logoFatec from "./assets/fatec_jacarei-removebg-preview.png";
 
-export function App() {
+type AppScreen = "chat" | "login" | "admin";
+
+export default function App() {
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(() =>
+    authService.getStoredToken() ? "admin" : "chat",
+  );
+  const [user, setUser] = useState<AuthUser | null>(() => authService.getStoredUser());
+
+  const handleLogout = () => {
+    authService.logout();
+    setUser(null);
+    setCurrentScreen("chat");
+  };
+
   return (
-    <div className="sd-page">
-      <header className="sd-topbar">
-        <div className="sd-brand">
-          <div className="sd-logo-card">
-            <img src="/src/assets/fatec_jacarei-removebg-preview.png" alt="Logo Fatec Jacareí" />
-          </div>
+    <div className="sd-app-container">
+      <header className="sd-header">
+        <img src={logoFatec} className="logoFatec" height={50} alt="Fatec Jacarei" />
+        <div className="sd-header-title">
+          <h1>Secretaria Digital - Fatec Jacarei</h1>
         </div>
-        
-        <div className="sd-searchbar">
-          <input type="text" placeholder="O que deseja localizar?" />
-          <button aria-label="Buscar">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M10.5 4a6.5 6.5 0 1 0 4.03 11.6l4.43 4.42 1.4-1.4-4.43-4.43A6.5 6.5 0 0 0 10.5 4Zm0 2a4.5 4.5 0 1 1 0 9a4.5 4.5 0 0 1 0-9Z" />
-            </svg>
-          </button>
-        </div>
+
+        <nav className="sd-nav">
+          {currentScreen !== "chat" && (
+            <button className="sd-nav-btn" onClick={() => setCurrentScreen("chat")}>
+              Voltar para o chat
+            </button>
+          )}
+          {currentScreen === "chat" && (
+            <button className="sd-nav-btn sd-btn-admin" onClick={() => setCurrentScreen("login")}>
+              Area admin
+            </button>
+          )}
+          {currentScreen === "admin" && (
+            <button className="sd-nav-btn" onClick={handleLogout}>
+              Sair
+            </button>
+          )}
+        </nav>
       </header>
 
-      <div className='divider'></div>
-      <main className="sd-shell">
-        <section className="sd-chat-card">
-          <div className="sd-chat-header">
-            <div className="sd-avatar sd-avatar-bot">
-              <div className="sd-bot-icon" />
-            </div>
-            <div>
-              <h1>Secretaria Digital - Fatec Jacareí</h1>
-              <p>Atendimento público para alunos e interessados</p>
-            </div>
-          </div>
-
-          <ChatContainer />
-
-        </section>
+      <main className="sd-main-content">
+        {currentScreen === "chat" && <ChatContainer />}
+        {currentScreen === "login" && (
+          <Login
+            onLoginSuccess={(authenticatedUser) => {
+              setUser(authenticatedUser);
+              setCurrentScreen("admin");
+            }}
+          />
+        )}
+        {currentScreen === "admin" && <ScreenSelectorPage user={user} />}
       </main>
+
+      <footer>
+        <div className="footer">
+          <span>Fatec Jacarei</span>
+        </div>
+      </footer>
     </div>
   );
 }
-
-export default App;
