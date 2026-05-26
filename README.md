@@ -594,6 +594,7 @@ docker-compose up --build
 <hr>
 
 <h3 id="sprint2">⏱️ Sprint 2 — Autenticação, Dúvidas e Logs 🥈</h3>
+
 <h4 id="backlogsprint2">📋 Backlog Sprint 2</h4>
 
 <table>
@@ -634,67 +635,7 @@ docker-compose up --build
         <td>✅</td>
         <td>RF09, RNF08, RP06</td>
     </tr>
-
-    <tr>
-        <td>34</td>
-        <td>Criar autenticação de usuários</td>
-        <td>5</td>
-        <td>🔴 Alta</td>
-        <td>Israel</td>
-        <td>✅</td>
-        <td>RF09, RF03</td>
-    </tr>
-
-    <tr>
-        <td>35</td>
-        <td>Gerar token de acesso após login</td>
-        <td>3</td>
-        <td>🔴 Alta</td>
-        <td>Israel</td>
-        <td>✅</td>
-        <td>RF09, RNF08</td>
-    </tr>
-
-    <tr>
-        <td>36</td>
-        <td>Criar middleware de autenticação</td>
-        <td>3</td>
-        <td>🔴 Alta</td>
-        <td>Israel</td>
-        <td>✅</td>
-        <td>RF11, RF10, RNF09</td>
-    </tr>
-
-    <tr>
-        <td>37</td>
-        <td>Validar permissões de acesso por papel (RBAC)</td>
-        <td>5</td>
-        <td>🟡 Média</td>
-        <td>Israel</td>
-        <td>✅</td>
-        <td>RF10, RF03</td>
-    </tr>
-
-    <tr>
-        <td>38</td>
-        <td>Proteger rotas privadas no backend</td>
-        <td>3</td>
-        <td>🔴 Alta</td>
-        <td>Israel</td>
-        <td>✅</td>
-        <td>RF11, RF10</td>
-    </tr>
-
-    <tr>
-        <td>39</td>
-        <td>Criar validação básica dos formulários</td>
-        <td>2</td>
-        <td>🟢 Baixa</td>
-        <td>Israel</td>
-        <td>✅</td>
-        <td>RF05, RF09</td>
-    </tr>
-
+</table>
 </table>
 
 <h4 id="burndownsprint2">📉 Burndown Sprint 2</h4>
