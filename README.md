@@ -607,11 +607,9 @@ docker-compose up --build
         <th>Status</th>
         <th>Requisitos Atendidos</th>
     </tr>
-
     <tr>
         <td colspan="7"><strong>📖 Levantamento e Modelagem</strong></td>
     </tr>
-
     <tr>
         <td>32</td>
         <td>Criação do Diagrama de Classes</td>
@@ -621,11 +619,9 @@ docker-compose up --build
         <td>⏳</td>
         <td>RNF04</td>
     </tr>
-
     <tr>
         <td colspan="7"><strong>🔐 Autenticação e Segurança</strong></td>
     </tr>
-
     <tr>
         <td>33</td>
         <td>Implementar JWT no backend</td>
